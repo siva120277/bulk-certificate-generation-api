@@ -1,0 +1,568 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Bulk Certificate Generator Dashboard</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg-dark: #0B0F19;
+      --card-bg: rgba(23, 31, 48, 0.75);
+      --border-color: rgba(255, 255, 255, 0.1);
+      --accent-gold: #F59E0B;
+      --accent-blue: #3B82F6;
+      --accent-green: #10B981;
+      --accent-red: #EF4444;
+      --text-main: #F1F5F9;
+      --text-muted: #94A3B8;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    
+    body {
+      font-family: 'Outfit', -apple-system, BlinkMacSystemFont, sans-serif;
+      background-color: var(--bg-dark);
+      background-image: 
+        radial-gradient(at 0% 0%, rgba(59, 130, 246, 0.12) 0px, transparent 50%),
+        radial-gradient(at 100% 100%, rgba(245, 158, 11, 0.08) 0px, transparent 50%);
+      color: var(--text-main);
+      min-height: 100vh;
+      padding: 2rem 1rem;
+    }
+
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+
+    header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 2rem;
+      padding-bottom: 1.5rem;
+      border-bottom: 1px solid var(--border-color);
+    }
+
+    .logo-container {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
+
+    .logo-icon {
+      width: 42px;
+      height: 42px;
+      background: linear-gradient(135deg, var(--accent-gold), var(--accent-blue));
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: bold;
+      font-size: 1.4rem;
+      color: #fff;
+      box-shadow: 0 4px 20px rgba(59, 130, 246, 0.3);
+    }
+
+    h1 { font-size: 1.75rem; font-weight: 700; letter-spacing: -0.5px; }
+    .subtitle { color: var(--text-muted); font-size: 0.9rem; }
+
+    .header-links a {
+      color: var(--accent-blue);
+      text-decoration: none;
+      font-size: 0.9rem;
+      margin-left: 1rem;
+      transition: color 0.2s;
+    }
+    .header-links a:hover { color: var(--accent-gold); }
+
+    .grid-layout {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 2rem;
+    }
+
+    @media (max-width: 900px) {
+      .grid-layout { grid-template-columns: 1fr; }
+    }
+
+    .card {
+      background: var(--card-bg);
+      backdrop-filter: blur(12px);
+      border: 1px solid var(--border-color);
+      border-radius: 16px;
+      padding: 1.75rem;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+    }
+
+    .card-title {
+      font-size: 1.2rem;
+      font-weight: 600;
+      margin-bottom: 1.25rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .form-group {
+      margin-bottom: 1.2rem;
+    }
+
+    label {
+      display: block;
+      font-size: 0.85rem;
+      font-weight: 500;
+      color: var(--text-muted);
+      margin-bottom: 0.4rem;
+    }
+
+    input[type="text"], input[type="date"], textarea {
+      width: 100%;
+      background: rgba(15, 23, 42, 0.6);
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      padding: 0.75rem 1rem;
+      color: var(--text-main);
+      font-family: inherit;
+      font-size: 0.95rem;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+
+    input:focus, textarea:focus {
+      border-color: var(--accent-blue);
+    }
+
+    textarea {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.85rem;
+      min-height: 180px;
+      resize: vertical;
+    }
+
+    .btn {
+      background: linear-gradient(135deg, var(--accent-blue), #2563EB);
+      color: #fff;
+      font-weight: 600;
+      border: none;
+      border-radius: 8px;
+      padding: 0.85rem 1.5rem;
+      cursor: pointer;
+      width: 100%;
+      font-size: 1rem;
+      transition: opacity 0.2s, transform 0.1s;
+    }
+
+    .btn:hover { opacity: 0.9; transform: translateY(-1px); }
+    .btn:active { transform: translateY(0); }
+
+    .btn-secondary {
+      background: rgba(255,255,255,0.1);
+      color: var(--text-main);
+      font-size: 0.8rem;
+      padding: 0.4rem 0.8rem;
+      width: auto;
+      border-radius: 6px;
+    }
+
+    /* Job Card list */
+    .job-list {
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+      max-height: 600px;
+      overflow-y: auto;
+      padding-right: 4px;
+    }
+
+    .job-item {
+      background: rgba(15, 23, 42, 0.5);
+      border: 1px solid var(--border-color);
+      border-radius: 12px;
+      padding: 1.2rem;
+      transition: border-color 0.2s;
+    }
+
+    .job-item:hover {
+      border-color: rgba(255,255,255,0.2);
+    }
+
+    .job-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 0.75rem;
+    }
+
+    .job-title { font-weight: 600; font-size: 1.05rem; }
+    .job-event { color: var(--text-muted); font-size: 0.85rem; }
+
+    .badge {
+      padding: 0.25rem 0.6rem;
+      border-radius: 20px;
+      font-size: 0.75rem;
+      font-weight: 600;
+      text-transform: uppercase;
+    }
+    .badge-pending { background: rgba(245, 158, 11, 0.2); color: var(--accent-gold); }
+    .badge-processing { background: rgba(59, 130, 246, 0.2); color: var(--accent-blue); }
+    .badge-completed { background: rgba(16, 185, 129, 0.2); color: var(--accent-green); }
+    .badge-partially_failed { background: rgba(245, 158, 11, 0.2); color: var(--accent-gold); }
+    .badge-failed { background: rgba(239, 68, 68, 0.2); color: var(--accent-red); }
+
+    .progress-bar-bg {
+      width: 100%;
+      height: 8px;
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 4px;
+      overflow: hidden;
+      margin: 0.75rem 0;
+    }
+
+    .progress-bar-fill {
+      height: 100%;
+      background: linear-gradient(90deg, var(--accent-blue), var(--accent-green));
+      width: 0%;
+      transition: width 0.3s ease;
+    }
+
+    .job-metrics {
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.8rem;
+      color: var(--text-muted);
+    }
+
+    .action-row {
+      margin-top: 1rem;
+      display: flex;
+      gap: 0.5rem;
+    }
+
+    .action-btn {
+      padding: 0.4rem 0.8rem;
+      font-size: 0.8rem;
+      border-radius: 6px;
+      border: 1px solid var(--border-color);
+      background: rgba(255,255,255,0.05);
+      color: var(--text-main);
+      cursor: pointer;
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.3rem;
+      transition: background 0.2s;
+    }
+
+    .action-btn:hover {
+      background: rgba(255,255,255,0.15);
+    }
+
+    /* Modal for detailed recipient breakdown */
+    .modal-overlay {
+      display: none;
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(0,0,0,0.7);
+      backdrop-filter: blur(8px);
+      z-index: 100;
+      justify-content: center;
+      align-items: center;
+      padding: 1rem;
+    }
+
+    .modal-content {
+      background: #131B2E;
+      border: 1px solid var(--border-color);
+      border-radius: 16px;
+      max-width: 800px;
+      width: 100%;
+      max-height: 85vh;
+      display: flex;
+      flex-direction: column;
+      box-shadow: 0 20px 50px rgba(0,0,0,0.5);
+    }
+
+    .modal-header {
+      padding: 1.25rem 1.5rem;
+      border-bottom: 1px solid var(--border-color);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .modal-body {
+      padding: 1.5rem;
+      overflow-y: auto;
+    }
+
+    .close-btn {
+      background: none;
+      border: none;
+      color: var(--text-muted);
+      font-size: 1.5rem;
+      cursor: pointer;
+    }
+
+    .table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.85rem;
+    }
+
+    .table th, .table td {
+      padding: 0.75rem 1rem;
+      text-align: left;
+      border-bottom: 1px solid rgba(255,255,255,0.05);
+    }
+
+    .table th { color: var(--text-muted); font-weight: 500; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <div class="logo-container">
+        <div class="logo-icon">📜</div>
+        <div>
+          <h1>Bulk Certificate Generator</h1>
+          <p class="subtitle">FastAPI Resilient Batch Processing System</p>
+        </div>
+      </div>
+      <div class="header-links">
+        <a href="/docs" target="_blank">Interactive API Docs (/docs)</a>
+        <a href="/redoc" target="_blank">ReDoc</a>
+      </div>
+    </header>
+
+    <div class="grid-layout">
+      <!-- Left Column: Submit New Bulk Request -->
+      <div class="card">
+        <div class="card-title">
+          <span>Create Certificate Job</span>
+          <button type="button" class="btn-secondary" onclick="loadSampleData()">Load Sample Data</button>
+        </div>
+
+        <form id="jobForm">
+          <div class="form-group">
+            <label for="title">Certificate Title</label>
+            <input type="text" id="title" required value="Certificate of Completion">
+          </div>
+
+          <div class="form-group">
+            <label for="event_name">Event / Course Name</label>
+            <input type="text" id="event_name" required value="Advanced Python & FastAPI Architecture 2026">
+          </div>
+
+          <div class="form-group">
+            <label for="issue_date">Issue Date</label>
+            <input type="date" id="issue_date">
+          </div>
+
+          <div class="form-group">
+            <label for="recipients_json">Recipients (JSON Array)</label>
+            <textarea id="recipients_json" required></textarea>
+          </div>
+
+          <button type="submit" class="btn" id="submitBtn">Generate Certificates</button>
+        </form>
+      </div>
+
+      <!-- Right Column: Active Jobs & Progress -->
+      <div class="card">
+        <div class="card-title">
+          <span>Job History & Progress</span>
+          <button type="button" class="btn-secondary" onclick="fetchJobs()">Refresh</button>
+        </div>
+
+        <div id="jobList" class="job-list">
+          <p style="color: var(--text-muted); font-size: 0.9rem;">Loading jobs...</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal for Recipient Status Breakdown -->
+  <div id="jobModal" class="modal-overlay">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3 id="modalTitle">Job Details</h3>
+        <button class="close-btn" onclick="closeModal()">&times;</button>
+      </div>
+      <div class="modal-body">
+        <table class="table">
+          <thead>
+            <tr>
+              <th>Recipient</th>
+              <th>Email</th>
+              <th>Status</th>
+              <th>Details / Actions</th>
+            </tr>
+          </thead>
+          <tbody id="modalTableBody">
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    document.getElementById('issue_date').value = new Date().toISOString().split('T')[0];
+
+    function loadSampleData() {
+      const sampleRecipients = [
+        {
+          "name": "Sarah Connor",
+          "email": "sarah.connor@example.com",
+          "custom_attributes": { "grade": "Distinction", "track": "Backend Eng" }
+        },
+        {
+          "name": "Alex Mercer",
+          "email": "alex.mercer@example.com",
+          "custom_attributes": { "grade": "High Merit", "track": "Distributed Systems" }
+        },
+        {
+          "name": "Dev Test (Failure Simulation)",
+          "email": "test.fail@example.com",
+          "custom_attributes": { "simulate_failure": true }
+        },
+        {
+          "name": "David Miller",
+          "email": "david.miller@example.com",
+          "custom_attributes": { "grade": "Excellence", "track": "Security" }
+        }
+      ];
+      document.getElementById('recipients_json').value = JSON.stringify(sampleRecipients, null, 2);
+    }
+
+    loadSampleData();
+
+    document.getElementById('jobForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const submitBtn = document.getElementById('submitBtn');
+      submitBtn.disabled = true;
+      submitBtn.innerText = "Submitting...";
+
+      try {
+        const title = document.getElementById('title').value;
+        const event_name = document.getElementById('event_name').value;
+        const issue_date = document.getElementById('issue_date').value;
+        const recipients = JSON.parse(document.getElementById('recipients_json').value);
+
+        const response = await fetch('/api/v1/jobs', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ title, event_name, issue_date, recipients })
+        });
+
+        if (!response.ok) {
+          const errData = await response.json();
+          alert('Error creating job: ' + JSON.stringify(errData.detail));
+          return;
+        }
+
+        fetchJobs();
+      } catch (err) {
+        alert('Invalid JSON input or request error: ' + err.message);
+      } finally {
+        submitBtn.disabled = false;
+        submitBtn.innerText = "Generate Certificates";
+      }
+    });
+
+    let pollingInterval = null;
+
+    async function fetchJobs() {
+      try {
+        const res = await fetch('/api/v1/jobs?limit=10');
+        const jobs = await res.json();
+        renderJobList(jobs);
+
+        // Check if any job is processing
+        const hasActive = jobs.some(j => j.status === 'PENDING' || j.status === 'PROCESSING');
+        if (hasActive && !pollingInterval) {
+          pollingInterval = setInterval(fetchJobs, 1500);
+        } else if (!hasActive && pollingInterval) {
+          clearInterval(pollingInterval);
+          pollingInterval = null;
+        }
+      } catch (err) {
+        console.error("Error fetching jobs:", err);
+      }
+    }
+
+    function renderJobList(jobs) {
+      const container = document.getElementById('jobList');
+      if (jobs.length === 0) {
+        container.innerHTML = `<p style="color: var(--text-muted); font-size: 0.9rem;">No jobs submitted yet.</p>`;
+        return;
+      }
+
+      container.innerHTML = jobs.map(j => `
+        <div class="job-item">
+          <div class="job-header">
+            <div>
+              <div class="job-title">${escapeHtml(j.title)}</div>
+              <div class="job-event">${escapeHtml(j.event_name)} • ${j.issue_date}</div>
+            </div>
+            <span class="badge badge-${j.status.toLowerCase()}">${j.status}</span>
+          </div>
+
+          <div class="progress-bar-bg">
+            <div class="progress-bar-fill" style="width: ${j.progress.percentage}%"></div>
+          </div>
+
+          <div class="job-metrics">
+            <span>Progress: ${j.progress.percentage}% (${j.progress.processed}/${j.progress.total})</span>
+            <span>Success: ${j.progress.successful} | Failed: ${j.progress.failed}</span>
+          </div>
+
+          <div class="action-row">
+            <button class="action-btn" onclick="inspectJob('${j.id}')">🔍 View Recipients</button>
+            ${j.progress.successful > 0 ? `<a class="action-btn" href="/api/v1/jobs/${j.id}/download-all" target="_blank">📦 Download ZIP</a>` : ''}
+          </div>
+        </div>
+      `).join('');
+    }
+
+    async function inspectJob(jobId) {
+      try {
+        const res = await fetch(`/api/v1/jobs/${jobId}`);
+        const job = await res.json();
+        
+        document.getElementById('modalTitle').innerText = `${job.title} - Recipients (${job.certificates.length})`;
+        const tbody = document.getElementById('modalTableBody');
+        
+        tbody.innerHTML = job.certificates.map(c => `
+          <tr>
+            <td>${escapeHtml(c.recipient_name)}</td>
+            <td>${escapeHtml(c.recipient_email)}</td>
+            <td><span class="badge badge-${c.status.toLowerCase()}">${c.status}</span></td>
+            <td>
+              ${c.file_url ? `<a class="action-btn" href="${c.file_url}" target="_blank">⬇ PDF</a>` : ''}
+              ${c.error_message ? `<span style="color: var(--accent-red); font-size: 0.8rem;">${escapeHtml(c.error_message)}</span>` : ''}
+            </td>
+          </tr>
+        `).join('');
+
+        document.getElementById('jobModal').style.display = 'flex';
+      } catch (err) {
+        alert('Failed to load job details');
+      }
+    }
+
+    function closeModal() {
+      document.getElementById('jobModal').style.display = 'none';
+    }
+
+    function escapeHtml(str) {
+      return str ? str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;") : "";
+    }
+
+    fetchJobs();
+  </script>
+</body>
+</html>
